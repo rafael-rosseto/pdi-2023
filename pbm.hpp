@@ -1,8 +1,13 @@
 #pragma once
 
+#include <algorithm>
+#include <cmath>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <vector>
+
+#define pi 3.14159265359
 
 using namespace std;
 
@@ -14,7 +19,7 @@ struct image {
     vector<vector<bool>> data;
 };
 
-void eat_comment(ifstream &f) {
+void eatComment(ifstream &f) {
     char linebuf[1024];
     char ppp;
     while (ppp = f.peek(), ppp == '\n' || ppp == '\r')
@@ -23,39 +28,24 @@ void eat_comment(ifstream &f) {
         f.getline(linebuf, 1023);
 }
 
-void load_pbm(image &img, const string &name) {
+void loadPbm(image &img, const string &name) {
     ifstream f(name.c_str(), ios::binary);
     if (f.fail()) {
         cout << "Could not open file: " << name << endl;
         return;
     }
-    eat_comment(f);
+    eatComment(f);
     f >> img.type;
-    eat_comment(f);
+    eatComment(f);
     f >> img.w;
-    eat_comment(f);
+    eatComment(f);
     f >> img.h;
-    eat_comment(f);
+    eatComment(f);
     f >> img.bits;
-    if (img.w < 1) {
-        cout << "Unsupported width: " << img.w << endl;
-        f.close();
-        return;
-    }
-    if (img.h < 1) {
-        cout << "Unsupported height: " << img.h << endl;
-        f.close();
-        return;
-    }
-    if (img.bits < 1) {
-        cout << "Unsupported number of bits: " << img.bits << endl;
-        f.close();
-        return;
-    }
     img.data.resize(img.w, vector<bool>(img.h));
     for (int i = 0; i < img.w; i++) {
         for (int j = 0; j < img.h; j++) {
-            int v;
+            bool v;
             f >> v;
             img.data[i][j] = v;
         }
@@ -63,19 +53,19 @@ void load_pbm(image &img, const string &name) {
     f.close();
 }
 
-void cloneImg(image &img1, image &img2) {
-    img2.type = img1.type;
-    img2.bits = img1.bits;
-    img2.w = img1.w;
-    img2.h = img1.h;
-    img2.data.clear();
-    img2.data.resize(img1.w, vector<bool>(img1.h));
+void cloneHeader(image &img, image &out) {
+    out.type = img.type;
+    out.bits = img.bits;
+    out.w = img.w;
+    out.h = img.h;
+    out.data.clear();
+    out.data.resize(img.w, vector<bool>(img.h));
 }
 
-void invert(image &img, image &img2) {
+void invert(image &img, image &out) {
     for (int i = 0; i < img.w; i++) {
         for (int j = 0; j < img.h; j++) {
-            img2.data[i][j] = 1 - img.data[i][j];
+            out.data[i][j] = 1 - img.data[i][j];
         }
     }
 }
