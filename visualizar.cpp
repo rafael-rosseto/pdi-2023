@@ -6,13 +6,18 @@ using namespace cv;
 
 int main(int argc, char* argv[]) {
     FreeConsole();
+    string s = argv[1];
+    size_t pos = s.find_last_of("\\");
+    if (pos != string::npos) {
+        s = s.substr(pos + 1);
+    }
     Mat input = imread(argv[1]);
-    namedWindow("PDI-2023", WINDOW_AUTOSIZE);
-    imshow("PDI-2023", input);
-    while (getWindowProperty("PDI-2023", WND_PROP_VISIBLE)) {
+    namedWindow(s, WINDOW_AUTOSIZE);
+    imshow(s, input);
+    while (getWindowProperty(s, WND_PROP_VISIBLE)) {
         char c = waitKeyEx(50);
         if (c == ' ') break;
     }
-    destroyWindow("PDI-2023");
+    destroyWindow(s);
     return 0;
 }
