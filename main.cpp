@@ -7,11 +7,11 @@ using namespace pgm;
 
 int main(int argc, char *argv[]) {
     image input, output;
-    carregarPgm(input, "imagens\\lena.pgm");
-    mediana(input, output, 2);
-    salvarPgm(output, "temp.pgm");
-    thread th1(system, "visualizar imagens\\lena.pgm");
-    thread th2(system, "visualizar temp.pgm");
+    carregarPgm(input, "imagens\\lenna.pgm");
+    histograma(input, output);
+    salvarPgm(output, "temp.ppm");
+    thread th1(system, "visualizar imagens\\lenna.pgm");
+    thread th2(system, "visualizar temp.ppm");
     th1.join();
     th2.join();
     system("del temp*");
