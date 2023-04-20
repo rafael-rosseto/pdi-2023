@@ -1,13 +1,13 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <vector>
 
-#define pi 3.14159265359
-#define src(i, j) (src.data[(i)*src.w + (j)])
-#define dst(i, j) (dst.data[(i)*dst.w + (j)])
+#define src(x, y) (src.data[(x) + src.w * (y)])
+#define dst(x, y) (dst.data[(x) + dst.w * (y)])
 
 using namespace std;
 
@@ -47,11 +47,11 @@ void carregarImagem(imagem &src, const string &name) {
         f.get();
         f.read(reinterpret_cast<char *>(src.data.data()), src.data.size());
     } else if (src.type == "P2") {
-        for (int i = 0; i < src.h; i++) {
-            for (int j = 0; j < src.w; j++) {
+        for (int y = 0; y < src.h; y++) {
+            for (int x = 0; x < src.w; x++) {
                 int v;
                 f >> v;
-                src(i, j) = v;
+                src(x, y) = v;
             }
         }
     }
@@ -70,9 +70,9 @@ void salvarImagem(imagem &src, const string &name) {
     if (src.type == "P5") {
         f.write((char *)&src.data[0], src.data.size());
     } else if (src.type == "P2") {
-        for (int i = 0; i < src.h; i++) {
-            for (int j = 0; j < src.w; j++) {
-                f << +src(i, j) << endl;
+        for (int y = 0; y < src.h; y++) {
+            for (int x = 0; x < src.w; x++) {
+                f << +src(x, y) << endl;
             }
         }
     }
@@ -86,11 +86,20 @@ void printHeader(imagem src) {
 }
 
 void printData(imagem src) {
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            cout << +src(i, j) << endl;
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            cout << +src(x, y) << endl;
         }
     }
+}
+
+void setHeader(imagem &src, string type, int w, int h, int bits) {
+    src.type = type;
+    src.w = w;
+    src.h = h;
+    src.bits = bits;
+    src.data.clear();
+    src.data.resize(w * h);
 }
 
 void clonarCabecalho(imagem src, imagem &dst) {
@@ -103,134 +112,136 @@ void clonarCabecalho(imagem src, imagem &dst) {
 }
 
 void clonarDados(imagem src, imagem &dst) {
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = src(i, j);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = src(x, y);
         }
     }
 }
 
 void inverter(imagem src, imagem &dst) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = 255 - src(i, j);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = 255 - src(x, y);
         }
     }
 }
 
 void transposta(imagem src, imagem &dst) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = src(j, i);
-        }
-    }
-}
-
-void flipHorizontal(imagem src, imagem &dst) {
-    clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = src(i, (src.h - j - 1));
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = src(y, x);
         }
     }
 }
 
 void flipVertical(imagem src, imagem &dst) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = src((src.w - i - 1), j);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = src(x, (src.h - y - 1));
+        }
+    }
+}
+
+void flipHorizontal(imagem src, imagem &dst) {
+    clonarCabecalho(src, dst);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = src((src.w - x - 1), y);
         }
     }
 }
 
 void girar90(imagem src, imagem &dst) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = src((src.h - j - 1), i);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = src((src.h - y - 1), x);
         }
     }
 }
 
-void girarM90(imagem src, imagem &dst) {
+void girar270(imagem src, imagem &dst) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = src(j, (src.w - i - 1));
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = src(y, (src.w - x - 1));
         }
     }
 }
 
 void girar180(imagem src, imagem &dst) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = src((src.w - i - 1), (src.h - j - 1));
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = src((src.w - x - 1), (src.h - y - 1));
         }
     }
 }
 
 void binarizarArea(imagem src, imagem &dst, int min, int max) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = (src(i, j) > min && src(i, j) < max) ? 255 : 0;
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = (src(x, y) > min && src(x, y) < max) ? 255 : 0;
         }
     }
 }
 
 void destacarArea(imagem src, imagem &dst, int min, int max, int cor) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = (src(i, j) > min && src(i, j) < max) ? cor : src(i, j);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = (src(x, y) > min && src(x, y) < max) ? cor : src(x, y);
         }
     }
 }
 
-void histograma(imagem src, imagem &dst) {
-    vector<int> aux(256, 0);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            aux[src(i, j)]++;
+void correcaoGama(imagem src, imagem &dst, float gama) {
+    clonarCabecalho(src, dst);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            float aux = src(x, y) / 255;
+            dst(x, y) = pow(aux, gama) * 255;
         }
     }
-    int max = 0, min = src.w * src.h;
-    for (int i = 0; i < 256; i++) {
-        if (aux[i] > max) max = aux[i];
-        if (aux[i] < min) min = aux[i];
-    }
-    for (int i = 0; i < 256; i++) {
-        aux[i] = (aux[i] - min) * 255 / (max - min);
-    }
-    dst.type = "P5";
-    dst.w = 256;
-    dst.h = 256;
-    dst.bits = 255;
-    dst.data.clear();
-    dst.data.resize(256 * 256);
-    for (int i = 0; i < 256; i++) {
-        for (int j = 0; j < 256; j++) {
-            dst(i, j) = (i < aux[j]) ? 255 : 0;
+}
+
+void ampliar(imagem src, imagem &dst) {
+    setHeader(dst, src.type, src.w * 2, src.h * 2, 255);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(2 * x, 2 * y) = src(x, y);
+            dst(2 * x + 1, 2 * y) = src(x, y);
+            dst(2 * x, 2 * y + 1) = src(x, y);
+            dst(2 * x + 1, 2 * y + 1) = src(x, y);
         }
     }
-    flipVertical(dst, dst);
+}
+
+void reduzir(imagem src, imagem &dst) {
+    setHeader(dst, src.type, src.w / 2, src.h / 2, 255);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = src(2 * x, 2 * y);
+        }
+    }
 }
 
 void brilho(imagem src, imagem &dst, float num) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            int aux = src(i, j) * num;
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            int aux = src(x, y) * num;
             if (aux > 255)
-                dst(i, j) = 255;
+                dst(x, y) = 255;
             else if (aux < 0)
-                dst(i, j) = 0;
+                dst(x, y) = 0;
             else
-                dst(i, j) = aux;
+                dst(x, y) = aux;
         }
     }
 }
@@ -238,15 +249,15 @@ void brilho(imagem src, imagem &dst, float num) {
 void normalizar(imagem src, imagem &dst) {
     clonarCabecalho(src, dst);
     int max = 0, min = 255;
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            if (src(i, j) > max) max = src(i, j);
-            if (src(i, j) < min) min = src(i, j);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            if (src(x, y) > max) max = src(x, y);
+            if (src(x, y) < min) min = src(x, y);
         }
     }
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = (src(i, j) - min) * 255 / (max - min);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = (src(x, y) - min) * 255 / (max - min);
         }
     }
 }
@@ -254,49 +265,95 @@ void normalizar(imagem src, imagem &dst) {
 void tons(imagem src, imagem &dst, int nivel) {
     clonarCabecalho(src, dst);
     int aux = 256 / nivel;
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
-            dst(i, j) = (src(i, j) / aux) * aux;
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = (src(x, y) / aux) * aux;
         }
     }
     normalizar(dst, dst);
 }
 
+void histograma(imagem src, imagem &dst) {
+    vector<int> hist(256, 0);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            hist[src(x, y)]++;
+        }
+    }
+    int max = 0;
+    for (int i = 0; i < 256; i++) {
+        if (hist[i] > max) max = hist[i];
+    }
+    for (int i = 0; i < 256; i++) {
+        hist[i] = hist[i] * 255 / max;
+    }
+    setHeader(dst, src.type, 256, 256, 255);
+    for (int y = 0; y < 256; y++) {
+        for (int x = 0; x < 256; x++) {
+            dst(x, 255 - y) = (y < hist[x]) ? 255 : 0;
+        }
+    }
+}
+
+void equalizarHistograma(imagem src, imagem &dst) {
+    clonarCabecalho(src, dst);
+    vector<int> hist(256, 0);
+    vector<float> fda(256, 0.0), sk(256, 0.0);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            hist[src(x, y)]++;
+        }
+    }
+    for (int i = 0; i < 256; i++) {
+        fda[i] = float(hist[i]) / float(src.w * src.h);
+    }
+    float soma = 0;
+    for (int i = 0; i < 256; i++) {
+        soma += fda[i];
+        sk[i] = soma * 255;
+    }
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = sk[src(x, y)];
+        }
+    }
+}
+
 void media(imagem src, imagem &dst, int range) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
             int pixel = 0;
             int count = 0;
-            for (int ii = i - range; ii <= i + range; ii++) {
-                for (int jj = j - range; jj <= j + range; jj++) {
-                    if (ii < 0 || jj < 0 || ii >= src.h || jj >= src.w)
+            for (int yy = y - range; yy <= y + range; yy++) {
+                for (int xx = x - range; xx <= x + range; xx++) {
+                    if (yy < 0 || xx < 0 || yy >= src.h || xx >= src.w)
                         continue;
-                    pixel += src(ii, jj);
+                    pixel += src(xx, yy);
                     count++;
                 }
             }
-            dst(i, j) = pixel * (1.0f / count);
+            dst(x, y) = pixel * (1.0f / count);
         }
     }
 }
 
 void mediana(imagem src, imagem &dst, int range) {
     clonarCabecalho(src, dst);
-    for (int i = 0; i < src.h; i++) {
-        for (int j = 0; j < src.w; j++) {
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
             vector<int> pixel;
             int count = 0;
-            for (int ii = i - range; ii <= i + range; ii++) {
-                for (int jj = j - range; jj <= j + range; jj++) {
-                    if (ii < 0 || jj < 0 || ii >= src.h || jj >= src.w)
+            for (int yy = y - range; yy <= y + range; yy++) {
+                for (int xx = x - range; xx <= x + range; xx++) {
+                    if (yy < 0 || xx < 0 || yy >= src.h || xx >= src.w)
                         continue;
-                    pixel.push_back(src(ii, jj));
+                    pixel.push_back(src(xx, yy));
                     count++;
                 }
             }
             sort(pixel.begin(), pixel.end());
-            dst(i, j) = pixel.at(count / 2 + 1);
+            dst(x, y) = pixel.at(count / 2 + 1);
         }
     }
 }

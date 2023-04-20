@@ -1,21 +1,23 @@
 #include <thread>
 
-#include "ppm.hpp"
+#include "pgm.hpp"
 
 using namespace std;
-using namespace ppm;
+using namespace pgm;
 
 int main(int argc, char *argv[]) {
-    imagem input, histR, histG, histB;
-    carregarImagem(input, "imagens\\lenna.ppm");
-    histograma(input, histR, histG, histB);
-    salvarImagem(histR, "temp-histR.ppm");
-    salvarImagem(histG, "temp-histG.ppm");
-    salvarImagem(histB, "temp-histB.ppm");
-    thread th1(system, "visualizar imagens\\lenna.ppm");
-    thread th2(system, "visualizar temp-histR.ppm");
-    thread th3(system, "visualizar temp-histG.ppm");
-    thread th4(system, "visualizar temp-histB.ppm");
+    imagem input, hist, equal, histEqual;
+    carregarImagem(input, "imagens\\lenna.pgm");
+    histograma(input, hist);
+    equalizarHistograma(input, equal);
+    histograma(equal, histEqual);
+    salvarImagem(hist, "temp-hist.pgm");
+    salvarImagem(equal, "temp-equalizado.pgm");
+    salvarImagem(histEqual, "temp-hist-equalizado.pgm");
+    thread th1(system, "visualizar imagens\\lenna.pgm");
+    thread th2(system, "visualizar temp-hist.pgm");
+    thread th3(system, "visualizar temp-equalizado.pgm");
+    thread th4(system, "visualizar temp-hist-equalizado.pgm");
     th1.join();
     th2.join();
     th3.join();
