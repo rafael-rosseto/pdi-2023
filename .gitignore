@@ -6,6 +6,9 @@
 # Visual Studio Code
 .vscode/
 
+# Temp files
+temp/
+
 # Prerequisites
 *.d
 

@@ -1,5 +1,3 @@
-#include <thread>
-
 #include "pgm.hpp"
 
 using namespace std;
@@ -11,17 +9,12 @@ int main(int argc, char *argv[]) {
     histograma(input, hist);
     equalizarHistograma(input, equal);
     histograma(equal, histEqual);
-    salvarImagem(hist, "temp-hist.pgm");
-    salvarImagem(equal, "temp-equalizado.pgm");
-    salvarImagem(histEqual, "temp-hist-equalizado.pgm");
-    thread th1(system, "visualizar imagens\\lenna.pgm");
-    thread th2(system, "visualizar temp-hist.pgm");
-    thread th3(system, "visualizar temp-equalizado.pgm");
-    thread th4(system, "visualizar temp-hist-equalizado.pgm");
-    th1.join();
-    th2.join();
-    th3.join();
-    th4.join();
-    system("del temp*");
+    salvarImagem(hist, "temp\\hist.pgm");
+    salvarImagem(equal, "temp\\equalizado.pgm");
+    salvarImagem(histEqual, "temp\\hist-equalizado.pgm");
+    system("start visualizar imagens\\lenna.pgm");
+    system("start visualizar temp\\hist.pgm");
+    system("start visualizar temp\\equalizado.pgm");
+    system("start visualizar temp\\hist-equalizado.pgm");
     return 0;
 }
