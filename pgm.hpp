@@ -159,15 +159,6 @@ void girar90(imagem src, imagem &dst) {
     clonarCabecalho(src, dst);
     for (int y = 0; y < src.h; y++) {
         for (int x = 0; x < src.w; x++) {
-            dst(x, y) = src((src.h - y - 1), x);
-        }
-    }
-}
-
-void girar270(imagem src, imagem &dst) {
-    clonarCabecalho(src, dst);
-    for (int y = 0; y < src.h; y++) {
-        for (int x = 0; x < src.w; x++) {
             dst(x, y) = src(y, (src.w - x - 1));
         }
     }
@@ -178,6 +169,15 @@ void girar180(imagem src, imagem &dst) {
     for (int y = 0; y < src.h; y++) {
         for (int x = 0; x < src.w; x++) {
             dst(x, y) = src((src.w - x - 1), (src.h - y - 1));
+        }
+    }
+}
+
+void girar270(imagem src, imagem &dst) {
+    clonarCabecalho(src, dst);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            dst(x, y) = src((src.h - y - 1), x);
         }
     }
 }
@@ -200,12 +200,33 @@ void destacarArea(imagem src, imagem &dst, int min, int max, int cor) {
     }
 }
 
+void brilho(imagem src, imagem &dst, float num) {
+    clonarCabecalho(src, dst);
+    for (int y = 0; y < src.h; y++) {
+        for (int x = 0; x < src.w; x++) {
+            int aux = src(x, y) * num;
+            if (aux < 0)
+                dst(x, y) = 0;
+            else if (aux > 255)
+                dst(x, y) = 255;
+            else
+                dst(x, y) = aux;
+        }
+    }
+}
+
 void correcaoGama(imagem src, imagem &dst, float gama) {
     clonarCabecalho(src, dst);
     for (int y = 0; y < src.h; y++) {
         for (int x = 0; x < src.w; x++) {
-            float aux = src(x, y) / 255;
-            dst(x, y) = pow(aux, gama) * 255;
+            float aux = float(src(x, y)) / float(255);
+            aux = pow(aux, gama) * 255;
+            if (aux < 0)
+                dst(x, y) = 0;
+            else if (aux > 255)
+                dst(x, y) = 255;
+            else
+                dst(x, y) = aux;
         }
     }
 }
@@ -224,24 +245,13 @@ void ampliar(imagem src, imagem &dst) {
 
 void reduzir(imagem src, imagem &dst) {
     setHeader(dst, src.type, src.w / 2, src.h / 2, 255);
-    for (int y = 0; y < src.h; y++) {
-        for (int x = 0; x < src.w; x++) {
-            dst(x, y) = src(2 * x, 2 * y);
-        }
-    }
-}
-
-void brilho(imagem src, imagem &dst, float num) {
-    clonarCabecalho(src, dst);
-    for (int y = 0; y < src.h; y++) {
-        for (int x = 0; x < src.w; x++) {
-            int aux = src(x, y) * num;
-            if (aux > 255)
-                dst(x, y) = 255;
-            else if (aux < 0)
-                dst(x, y) = 0;
-            else
-                dst(x, y) = aux;
+    for (int y = 0; y < src.h / 2; y++) {
+        for (int x = 0; x < src.w / 2; x++) {
+            int aux = src(2 * x, 2 * y) +
+                      src(2 * x + 1, 2 * y) +
+                      src(2 * x, 2 * y + 1) +
+                      src(2 * x + 1, 2 * y + 1);
+            dst(x, y) = aux / 4;
         }
     }
 }
