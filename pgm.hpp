@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <vector>
 
@@ -283,36 +284,38 @@ void tons(imagem src, imagem &dst, int nivel) {
     normalizar(dst, dst);
 }
 
-void histograma(imagem src, imagem &dst) {
-    vector<int> hist(256, 0);
-    for (int y = 0; y < src.h; y++) {
-        for (int x = 0; x < src.w; x++) {
-            hist[src(x, y)]++;
-        }
-    }
+void plotHistograma(imagem &dst, vector<int> hist) {
+    setHeader(dst, "P5", 512, 256, 255);
     int max = 0;
-    for (int i = 0; i < 256; i++) {
-        if (hist[i] > max) max = hist[i];
-    }
-    for (int i = 0; i < 256; i++) {
-        hist[i] = hist[i] * 255 / max;
-    }
-    setHeader(dst, src.type, 256, 256, 255);
+    for (auto &i : hist)
+        if (i > max) max = i;
+    for (auto &i : hist)
+        i = i * 255 / max;
     for (int y = 0; y < 256; y++) {
         for (int x = 0; x < 256; x++) {
-            dst(x, 255 - y) = (y < hist[x]) ? 255 : 0;
+            dst(2 * x, 255 - y) = (y < hist[x]) ? 0 : 255;
+            dst(2 * x + 1, 255 - y) = (y < hist[x]) ? 0 : 255;
         }
     }
+}
+
+void histograma(imagem src, imagem &dst) {
+    vector<int> hist(256, 0);
+    ofstream f("temp\\histograma.txt", ios::out);
+    for (auto &i : src.data)
+        hist[i]++;
+    for (int i = 0; i < 256; i++)
+        f << i << " " << hist[i] << endl;
+    f.close();
+    plotHistograma(dst, hist);
 }
 
 void equalizarHistograma(imagem src, imagem &dst) {
     clonarCabecalho(src, dst);
     vector<int> hist(256, 0);
     vector<float> fda(256, 0.0), sk(256, 0.0);
-    for (int y = 0; y < src.h; y++) {
-        for (int x = 0; x < src.w; x++) {
-            hist[src(x, y)]++;
-        }
+    for (auto &i : src.data) {
+        hist[i]++;
     }
     for (int i = 0; i < 256; i++) {
         fda[i] = float(hist[i]) / float(src.w * src.h);
